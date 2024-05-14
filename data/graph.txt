@@ -1,7 +1,15 @@
 A
 B
 C
+D
+E
+F
+frogger
 -
 A|B,C
 B|A
 C|A
+F|A,B,C,D,E
+E|A
+D|B,C
+frogger|A,B,C
