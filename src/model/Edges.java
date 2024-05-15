@@ -1,7 +1,5 @@
 package src.model;
 
-import java.util.HashMap;
-
 public class Edges {
     private Vertex startVertex, endVertex;
     private double weight = 1;

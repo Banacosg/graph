@@ -1,6 +1,7 @@
 package src.model;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
@@ -8,12 +9,12 @@ import java.util.HashMap;
 import src.View.initView;
 
 public class graphReader {
-    public static GraphModel readGraph(String fileName){
+    public static GraphModel readGraph(File file){
         HashMap<String, Vertex> vertices = new HashMap<String, Vertex>();
         HashMap<String, Edges> edges = new HashMap<String, Edges>();
         boolean notVerticesInit = true;
         try{
-            BufferedReader reader = new BufferedReader(new FileReader(fileName));
+            BufferedReader reader = new BufferedReader(new FileReader(file));
             String line = reader.readLine();
             while(line != null && notVerticesInit){
                 if(new String(line.substring(0,1)).equals("-")){
@@ -75,17 +76,18 @@ public class graphReader {
             }
         }catch(IOException e){
             System.out.println("An IO error has occurred " + e.getMessage());
+            System.exit(0);
         }
-        System.out.println(vertices.toString()); //fixme
-        System.out.println(vertices.get("A").getNeighbors().toString());
-        System.out.println(vertices.get("B").getNeighbors().toString());
-        System.out.println(vertices.get("C").getNeighbors().toString());
-        System.out.println(vertices.get("F").getNeighbors().toString());
-        System.out.println(edges.toString());
+        // System.out.println(vertices.toString()); //fixme
+        // System.out.println(vertices.get("A").getNeighbors().toString());
+        // System.out.println(vertices.get("B").getNeighbors().toString());
+        // System.out.println(vertices.get("C").getNeighbors().toString());
+        // System.out.println(vertices.get("F").getNeighbors().toString());
+        // System.out.println(edges.toString());
         GraphModel graph = new GraphModel(edges, vertices);
-        initView.modelUpdate(graph, "read"); //Tells view that graph is created
+        //init graph
+        graph.initGraph();
         return graph;
-
     }
 
     public static void addNeighbor(Vertex curVertex, HashMap<String, Vertex> vertices, HashMap<String, Edges> edges, String line, int start, int end){

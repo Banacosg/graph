@@ -2,6 +2,7 @@ package src.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Random;
 
 import src.View.initView;
 
@@ -13,6 +14,32 @@ public class GraphModel {
     public GraphModel(HashMap<String, Edges> edges, HashMap<String, Vertex> vertices){
         this.edges = edges;
         this.vertices = vertices;
+    }
+
+    public void initGraph(){
+        Random random = new Random();
+        double xCoord;
+        double yCoord;
+        Object[] verticesArray = vertices.values().toArray();
+        Vertex curVertex;
+        for(int i = 0; i < verticesArray.length; i++){
+            xCoord = random.nextDouble(Constants.getXYInit_Proportion()); 
+            yCoord = random.nextDouble(Constants.getXYInit_Proportion());
+            curVertex = (Vertex) verticesArray[i];
+            curVertex.setX(xCoord);
+            curVertex.setY(yCoord);
+        }
+        initView.modelUpdate(this, "read");
+    }
+
+    public void resizeHeight(double height){
+        Constants.setScreenHeight(height);
+        // System.out.println("Screen height " + height);
+        initView.modelUpdate(this, "windowUpdate");
+    }
+    public void resizeWidth(double width){
+        Constants.setScreenLength(width);
+        initView.modelUpdate(this, "windowUpdate");
     }
 
     public HashMap<String, Edges> getEdges(){ return this.edges;}
@@ -41,7 +68,8 @@ public class GraphModel {
             initView.modelUpdate(this, "graphUpdate");
         }
     }
-    public void setXYVertex(Vertex v, int x, int y){
+
+    public void setXYVertex(Vertex v, double x, double y){
         v.setX(x);
         v.setY(y);
         initView.modelUpdate(this, "graphUpdate");
