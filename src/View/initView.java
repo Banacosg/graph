@@ -1,26 +1,18 @@
 package src.View;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Random;
 
-import javafx.animation.AnimationTimer;
 import javafx.application.Application;
-import javafx.geometry.Point2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.Button;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import src.model.Edges;
 import src.model.GraphModel;
 import src.model.Vertex;
-import src.model.graphReader;
 import src.Controller.CanvasController;
 import src.model.Constants;
 
@@ -72,6 +64,12 @@ public class initView extends Application{
         Vertex curVertex;
         for(int i = 0; i < vertices.length; i++){ //Vertex output
             curVertex = (Vertex) vertices[i];
+            if(curVertex.isSelected()){
+                gc.setFill(Color.RED);
+            }
+            else{
+                gc.setFill(Color.BLACK);
+            }
             gc.fillOval(curVertex.getX() - Constants.VERTEX_OFFSET, curVertex.getY() - Constants.VERTEX_OFFSET, Constants.VERTEX_SIZE, Constants.VERTEX_SIZE);
         }
 
@@ -90,13 +88,13 @@ public class initView extends Application{
     public static void modelUpdate(GraphModel graph, String message){
         switch (message){
             case "read" -> {initGraph(graph); outputGraph(graph);}
-            case "graphUpdate" -> onUpdate();
+            case "graphUpdate" -> onUpdate(graph);
             default -> {System.out.println(message); System.exit(0);}
         }
     }
 
-    private static void onUpdate(){
+    private static void onUpdate(GraphModel graph){
         gc.clearRect(0,0,Constants.SCREEN_LENGTH, Constants.SCREEN_HEIGHT); //Clear screen
-
+        outputGraph(graph);
     }
 }

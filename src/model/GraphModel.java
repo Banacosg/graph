@@ -1,5 +1,6 @@
 package src.model;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import src.View.initView;
@@ -7,17 +8,19 @@ import src.View.initView;
 public class GraphModel {
     private HashMap<String, Edges> edges;
     private HashMap<String, Vertex> vertices;
+    private ArrayList<Vertex> selectedVertices = new ArrayList<Vertex>();
 
     public GraphModel(HashMap<String, Edges> edges, HashMap<String, Vertex> vertices){
         this.edges = edges;
         this.vertices = vertices;
-
     }
 
     public HashMap<String, Edges> getEdges(){ return this.edges;}
     public HashMap<String, Vertex> getVertices(){ return this.vertices; }
+    public ArrayList<Vertex> getSelectedVertices(){ return this.selectedVertices;}
     public void setEdges(HashMap<String, Edges> edges){ this.edges = edges;}
     public void setVertices(HashMap<String, Vertex> vertices){ this.vertices = vertices; }
+    public void setSelectedVertices(ArrayList<Vertex> vertices){ this.selectedVertices = vertices;}
 
     public void makeNeighbor(Vertex srcVertex, Vertex dstVertex){
         if(edges.containsKey(srcVertex.getName() + dstVertex.getName())){
@@ -37,6 +40,33 @@ public class GraphModel {
             edges.remove(srcVertex.getName() + dstVertex.getName());
             initView.modelUpdate(this, "graphUpdate");
         }
+    }
+    public void setXYVertex(Vertex v, int x, int y){
+        v.setX(x);
+        v.setY(y);
+        initView.modelUpdate(this, "graphUpdate");
+    }
+    public void flopSelected(Vertex v){
+        if(v.isSelected()){
+            selectedVertices.remove(v);
+        }
+        else{
+            selectedVertices.add(v);
+        }
+        v.flopSelected();
+        initView.modelUpdate(this, "graphUpdate"); //Possible to only update color
+    }
+    public void setColor(Vertex v, int color){
+        v.setColor(color);
+        initView.modelUpdate(this, "graphUpdate"); //Possible to only update color
+    }
+    public void setWeight(Edges e, double weight){
+        e.setWeight(weight);
+        initView.modelUpdate(this, "graphUpdate"); //Possible to only update name/color
+    }
+    public void setColor(Edges e, int color){
+        e.setColor(color);
+        initView.modelUpdate(this, "graphUpdate"); //Possible to only update color
     }
 
 }
