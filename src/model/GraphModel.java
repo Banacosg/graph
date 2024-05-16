@@ -23,11 +23,11 @@ public class GraphModel {
         Object[] verticesArray = vertices.values().toArray();
         Vertex curVertex;
         for(int i = 0; i < verticesArray.length; i++){
-            xCoord = random.nextDouble(Constants.getXYInit_Proportion()); 
-            yCoord = random.nextDouble(Constants.getXYInit_Proportion());
+            xCoord = random.nextDouble(Constants.getXYInit_Proportion() * Constants.getScreenLength()); 
+            yCoord = random.nextDouble(Constants.getXYInit_Proportion() * Constants.getCanvasHeight());
             curVertex = (Vertex) verticesArray[i];
-            curVertex.setX(xCoord);
-            curVertex.setY(yCoord);
+            curVertex.setXCoeff(xCoord);
+            curVertex.setYCoeff(yCoord);
         }
         initView.modelUpdate(this, "read");
     }
@@ -48,6 +48,36 @@ public class GraphModel {
     public void setEdges(HashMap<String, Edges> edges){ this.edges = edges;}
     public void setVertices(HashMap<String, Vertex> vertices){ this.vertices = vertices; }
     public void setSelectedVertices(ArrayList<Vertex> vertices){ this.selectedVertices = vertices;}
+
+    private String genRandomString(){
+        Random rand = new Random();
+        String randString = "";
+        for(int i = 0; i < 20; i++){
+            char c = (char) rand.nextInt(Constants.getEightBitLimit());
+            randString += c;
+        }
+        return randString;
+    }
+
+    public void addVertex(double x, double y){
+        String name = genRandomString();
+        Vertex v = new Vertex(name);
+        v.setXCoeff(x);
+        v.setYCoeff(y);
+        vertices.put(name, v);
+        initView.modelUpdate(this, "graphUpdate");
+    }
+
+    public void addVertexWithNeighbor(double x, double y, Vertex neighbor){
+        String name = genRandomString();
+        Vertex v = new Vertex(name);
+        v.setXCoeff(x);
+        v.setYCoeff(y);
+        neighbor.addNeighbor(neighbor);
+        vertices.put(name, v);
+        edges.put(neighbor.getName() + v.getName(), new Edges(neighbor, v));
+        initView.modelUpdate(this, "graphUpdate");
+    }
 
     public void makeNeighbor(Vertex srcVertex, Vertex dstVertex){
         if(edges.containsKey(srcVertex.getName() + dstVertex.getName())){
@@ -70,8 +100,8 @@ public class GraphModel {
     }
 
     public void setXYVertex(Vertex v, double x, double y){
-        v.setX(x);
-        v.setY(y);
+        v.setXCoeff(x);
+        v.setYCoeff(y);
         initView.modelUpdate(this, "graphUpdate");
     }
     public void flopSelected(Vertex v){

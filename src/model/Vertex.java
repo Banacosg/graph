@@ -4,8 +4,8 @@ import java.util.ArrayList;
 public class Vertex{
     private String name;
     private int color;
-    private double xCoord = 0; // x and y coord is between 0 and 1
-    private double yCoord = 0; // it is a coefficient for the screen size
+    private double xCoordCoeff = 0; // x and y coord is between 0 and 1
+    private double yCoordCoeff = 0; // it is a coefficient for the screen size
     private boolean selected = false;
     private ArrayList<Vertex> neighbors = new ArrayList<Vertex>();
 
@@ -22,8 +22,8 @@ public class Vertex{
     public String getName(){ return name; }
     public ArrayList<Vertex> getNeighbors(){ return neighbors; }
     public int getColor(){ return color; }
-    public double getX(){ return xCoord; }
-    public double getY(){ return yCoord; }
+    public double getXCoeff(){ return xCoordCoeff; }
+    public double getYCoeff(){ return yCoordCoeff; }
     public boolean isSelected(){return selected;}
     
     public void addNeighbor(Vertex neighbor){
@@ -39,8 +39,8 @@ public class Vertex{
         neighbors.removeAll(neighbors);
     }
     public void setColor(int color){this.color = color;}
-    public void setX(double x){ this.xCoord = x;}
-    public void setY(double y){ this.yCoord = y;}
+    public void setXCoeff(double x){ this.xCoordCoeff = x / Constants.getScreenLength();}
+    public void setYCoeff(double y){ this.yCoordCoeff = y / Constants.getCanvasHeight();}
     public void flopSelected(){this.selected = !this.selected; }
 
     @Override

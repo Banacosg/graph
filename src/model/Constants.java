@@ -6,6 +6,7 @@ public class Constants {
     private final static double LINE_WIDTH = 2.0;
     private final static double TOOL_BAR_HEIGHT = 26;
     private final static double TITLE_BAR_HEIGHT = 37.3333333;
+    private final static int EIGHT_BIT_LIMIT = 255;
     private static double SCREEN_LENGTH = 1920;
     private static double SCREEN_HEIGHT = 1080;
     private final static double XYINIT_PROPORTION = (SCREEN_LENGTH - 16) / SCREEN_LENGTH; //To keep vertices on part of canvas that is displayed
@@ -37,6 +38,9 @@ public class Constants {
     }
     public static double getXYInit_Proportion(){
         return XYINIT_PROPORTION;
+    }
+    public static int getEightBitLimit(){
+        return EIGHT_BIT_LIMIT;
     }
     public static void setScreenLength(double screenLength){
         SCREEN_LENGTH = screenLength;
