@@ -7,13 +7,22 @@ import java.util.Random;
 import src.View.initView;
 
 public class GraphModel {
-    private HashMap<String, Edges> edges;
     private HashMap<String, Vertex> vertices;
     private ArrayList<Vertex> selectedVertices = new ArrayList<Vertex>();
 
-    public GraphModel(HashMap<String, Edges> edges, HashMap<String, Vertex> vertices){
-        this.edges = edges;
+    public GraphModel(HashMap<String, Vertex> vertices){
         this.vertices = vertices;
+    }
+
+    private void setEdgeEquations(Vertex changedVertex){
+        for(Edges e : changedVertex.getNeighbors().values()){
+            e.setLinearEquation();
+        }
+        for(Vertex v : vertices.values()){
+            if(v.getNeighbors().containsKey(changedVertex.getName())){
+                v.getNeighbors().get(changedVertex.getName()).setLinearEquation();
+            }
+        }
     }
 
     public void initGraph(){
@@ -28,24 +37,21 @@ public class GraphModel {
             curVertex = (Vertex) verticesArray[i];
             curVertex.setXCoeff(xCoord);
             curVertex.setYCoeff(yCoord);
+            setEdgeEquations(curVertex);
         }
         initView.modelUpdate(this, "read");
     }
 
     public void resizeHeight(double height){
         Constants.setScreenHeight(height);
-        // System.out.println("Screen height " + height);
         initView.modelUpdate(this, "windowUpdate");
     }
     public void resizeWidth(double width){
         Constants.setScreenLength(width);
         initView.modelUpdate(this, "windowUpdate");
     }
-
-    public HashMap<String, Edges> getEdges(){ return this.edges;}
     public HashMap<String, Vertex> getVertices(){ return this.vertices; }
     public ArrayList<Vertex> getSelectedVertices(){ return this.selectedVertices;}
-    public void setEdges(HashMap<String, Edges> edges){ this.edges = edges;}
     public void setVertices(HashMap<String, Vertex> vertices){ this.vertices = vertices; }
     public void setSelectedVertices(ArrayList<Vertex> vertices){ this.selectedVertices = vertices;}
 
@@ -65,6 +71,23 @@ public class GraphModel {
         v.setXCoeff(x);
         v.setYCoeff(y);
         vertices.put(name, v);
+        setEdgeEquations(v);
+        initView.modelUpdate(this, "graphUpdate");
+    }
+
+    public void removeVertex(Vertex v){
+        for(Vertex curVertex : vertices.values()){
+            HashMap<String, Edges> neighborVertices = curVertex.getNeighbors();
+            if(neighborVertices.containsKey(v.getName())){
+                curVertex.removeNeighbor(v);
+            }
+        }
+        vertices.remove(v.getName());
+        initView.modelUpdate(this, "graphUpdate");
+    }
+
+    public void removeEdge(Vertex srcVertex, Vertex dstVertex){
+        srcVertex.removeNeighbor(dstVertex);
         initView.modelUpdate(this, "graphUpdate");
     }
 
@@ -73,28 +96,27 @@ public class GraphModel {
         Vertex v = new Vertex(name);
         v.setXCoeff(x);
         v.setYCoeff(y);
-        neighbor.addNeighbor(neighbor);
         vertices.put(name, v);
-        edges.put(neighbor.getName() + v.getName(), new Edges(neighbor, v));
+        neighbor.addNeighbor(v);
+        setEdgeEquations(neighbor);
         initView.modelUpdate(this, "graphUpdate");
     }
 
     public void makeNeighbor(Vertex srcVertex, Vertex dstVertex){
-        if(edges.containsKey(srcVertex.getName() + dstVertex.getName())){
+        if(srcVertex.getNeighbors().containsKey(dstVertex.getName())){
             System.out.println("This vertex pair already exists!");
         }
         else{
             srcVertex.addNeighbor(dstVertex);
-            edges.put(srcVertex.getName() + dstVertex.getName(), new Edges(srcVertex, dstVertex));
+            setEdgeEquations(srcVertex);
         }
     }
     public void removeNeighbor(Vertex srcVertex, Vertex dstVertex){
-        if(!edges.containsKey(srcVertex.getName() + dstVertex.getName())){
+        if(!srcVertex.getNeighbors().containsKey(dstVertex.getName())){
             System.out.println("This vertex pair doesn't exists!");
         }
         else{
             srcVertex.removeNeighbor(dstVertex);
-            edges.remove(srcVertex.getName() + dstVertex.getName());
             initView.modelUpdate(this, "graphUpdate");
         }
     }
@@ -102,6 +124,7 @@ public class GraphModel {
     public void setXYVertex(Vertex v, double x, double y){
         v.setXCoeff(x);
         v.setYCoeff(y);
+        setEdgeEquations(v);
         initView.modelUpdate(this, "graphUpdate");
     }
     public void flopSelected(Vertex v){

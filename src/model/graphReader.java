@@ -11,7 +11,7 @@ import src.View.initView;
 public class graphReader {
     public static GraphModel readGraph(File file){
         HashMap<String, Vertex> vertices = new HashMap<String, Vertex>();
-        HashMap<String, Edges> edges = new HashMap<String, Edges>();
+        //HashMap<String, Edges> edges = new HashMap<String, Edges>();
         boolean notVerticesInit = true;
         try{
             BufferedReader reader = new BufferedReader(new FileReader(file));
@@ -51,7 +51,7 @@ public class graphReader {
                 // System.out.println(endOfName); fixme
                 // System.out.println(endOfNeighbor);
                 while(endOfNeighbor != -1){
-                    addNeighbor(curVertex, vertices, edges, line, endOfName + 1, endOfNeighbor);
+                    addNeighbor(curVertex, vertices, line, endOfName + 1, endOfNeighbor);
                     endOfName = endOfNeighbor; //end of name is now where next neighbor begins
                     if(line.substring(endOfName + 1).indexOf(',') == -1){
                         endOfNeighbor = -1;
@@ -67,7 +67,7 @@ public class graphReader {
                     // System.out.println(endOfNeighbor);
                 }
                 if(endOfNeighbor == -1){ //Last name case
-                    addNeighbor(curVertex, vertices, edges, line, endOfName + 1, line.length());
+                    addNeighbor(curVertex, vertices, line, endOfName + 1, line.length());
                 }
                 line = reader.readLine();
             }
@@ -84,28 +84,29 @@ public class graphReader {
         // System.out.println(vertices.get("C").getNeighbors().toString());
         // System.out.println(vertices.get("F").getNeighbors().toString());
         // System.out.println(edges.toString());
-        GraphModel graph = new GraphModel(edges, vertices);
+        GraphModel graph = new GraphModel(vertices);
         //init graph
         graph.initGraph();
         return graph;
     }
 
-    public static void addNeighbor(Vertex curVertex, HashMap<String, Vertex> vertices, HashMap<String, Edges> edges, String line, int start, int end){
-        if(!vertices.containsKey(line.substring(start, end))){
-            System.out.println("Vertex \"" + line.substring(start, end) + "\" doesn't exit! Terminating...");
+    public static void addNeighbor(Vertex curVertex, HashMap<String, Vertex> vertices, String line, int start, int end){
+        String neighborName = line.substring(start, end);
+        Vertex neighbor = vertices.get(neighborName);
+        if(!vertices.containsKey(neighborName)){
+            System.out.println("Vertex \"" + neighborName + "\" doesn't exit! Terminating...");
             System.exit(0);
         }
-        if(vertices.get(line.substring(start, end)).getName() == curVertex.getName()){
+        if(vertices.get(neighborName).getName() == curVertex.getName()){
             System.out.println("Can't be neighbor of self! Terminating...");
             System.exit(0);
         }
-        if(curVertex.getNeighbors().contains(vertices.get(line.substring(start, end)))){
-            System.out.println(line.substring(start, end) + " already a neighbor of " + curVertex.getName() + "! Terminating...");
+        System.out.println("This:" + curVertex.getNeighbors());
+        if(curVertex.getNeighbors().containsKey(neighbor.getName())){
+            System.out.println(neighborName + " already a neighbor of " + curVertex.getName() + "! Terminating...");
             System.exit(0);
         }
-        String neighborName = line.substring(start, end);
-        Vertex neighbor = vertices.get(neighborName);
         curVertex.addNeighbor(neighbor);
-        edges.put(curVertex.getName() + neighborName, new Edges(curVertex, neighbor));   
+        //edges.put(curVertex.getName() + neighborName, new Edges(curVertex, neighbor));   
     }
 }

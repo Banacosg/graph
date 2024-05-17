@@ -2,12 +2,14 @@ package src.Controller;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import javafx.scene.Scene;
 import src.model.GraphModel;
 import src.model.Vertex;
 import src.model.graphReader;
 import src.model.Constants;
+import src.model.Edges;
 
 public class CanvasController {
     private GraphModel graph;
@@ -61,6 +63,8 @@ public class CanvasController {
     public void setMode(String mode){
         switch(mode){
             case "add" -> clickMode = ClickMode.addMode; 
+            case "move" -> clickMode = ClickMode.moveMode;
+            case "remove" -> clickMode = ClickMode.removeMode;
         }
     }
 
@@ -89,7 +93,47 @@ public class CanvasController {
         }else{
             return null;
         }
+    }
 
+    private Edges foundEdge(double mouseX, double mouseY){
+        for(Vertex curVertex : graph.getVertices().values()){
+            Object[] curEdges = curVertex.getNeighbors().values().toArray();
+            double srcX, srcY, destX, destY;
+            double leftX, rightX, upperY, lowerY;
+            for(Object e : curEdges){
+                Edges curEdge = (Edges) e; 
+                srcX = curEdge.getSrcVertex().getXCoeff() * Constants.getScreenLength();
+                srcY = curEdge.getSrcVertex().getYCoeff() * Constants.getCanvasHeight();
+                destX = curEdge.getDestVertex().getXCoeff() * Constants.getScreenLength();
+                destY = curEdge.getDestVertex().getYCoeff() * Constants.getCanvasHeight();
+                if(srcX > destX){
+                    leftX = destX;
+                    rightX = srcX;
+                }else{
+                    leftX = srcX;
+                    rightX = destX;
+                }
+                if(srcY > destY){
+                    upperY = destY; //Upper as in high on the screen
+                    lowerY = srcY;
+                }
+                else{
+                    upperY = srcY; //Upper as in high on the screen
+                    lowerY = destY;
+                }
+                // System.out.println("leftx: " + (leftX - Constants.getVertexSize()) + ", rightx: " + (rightX + Constants.getVertexSize()) + ", uppery: " + (upperY + Constants.getVertexSize()) + ", lowerY: " + (lowerY - Constants.getVertexSize()));
+                // System.out.println(mouseX);
+                // System.out.println(mouseY);
+                if(mouseX <= rightX  && mouseX >= leftX  && mouseY <= lowerY  && mouseY >= upperY){
+                    double lineY = curEdge.getCorrespondingY(mouseX);
+                    // System.out.println("Got Y " + lineY);
+                    if(mouseY >= lineY - Constants.getLineHitBox() && mouseY <= lineY + Constants.getLineHitBox()){
+                        return curEdge;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     public void leftClick(double mouseX, double mouseY){
@@ -97,7 +141,7 @@ public class CanvasController {
             switch(clickMode){
                 case ClickMode.moveMode -> moveLeftClick(mouseX, mouseY);
                 case ClickMode.addMode -> addLeftClick(mouseX, mouseY);
-                case ClickMode.removeMode -> System.out.println("Implement remove mode");
+                case ClickMode.removeMode -> removeRightClick(mouseX, mouseY);
                 case ClickMode.colorMode -> System.out.println("Implement color mode");
                 default -> System.out.println("Something else");
             }
@@ -107,11 +151,40 @@ public class CanvasController {
         }
     }
 
+    private void removeRightClick(double mouseX, double mouseY){
+        Vertex v = foundCollision(mouseX, mouseY);
+        ArrayList<Vertex> selectedVertices = graph.getSelectedVertices();
+        Edges selectedEdge = foundEdge(mouseX, mouseY);
+        if(selectedVertices.size() == 0){
+            System.out.println("select");
+            if(v != null){
+                graph.flopSelected(v);
+            }
+            else{
+                if(selectedEdge != null){
+                    graph.removeNeighbor(selectedEdge.getSrcVertex(), selectedEdge.getDestVertex());
+                }
+            }
+        }
+        else if(selectedVertices.size() == 1){
+            Vertex selectedVertex = selectedVertices.get(0);
+            if(v != null){
+                if(selectedVertex == v){
+                    graph.flopSelected(selectedVertex);
+                    graph.removeVertex(selectedVertex);
+                }else{
+                    graph.removeEdge(selectedVertex, v);
+                }
+            }else{
+                System.out.println("Unselect");
+                graph.flopSelected(selectedVertex);
+            }
+        }
+    }
+
     private void addLeftClick(double mouseX, double mouseY){
         ArrayList<Vertex> selectedVertices = graph.getSelectedVertices();
         Vertex v = foundCollision(mouseX, mouseY);
-        System.out.print(selectedVertices.size() + " ");
-        System.out.println(v);
         if(selectedVertices.size() == 0){
             if(v != null){
                 graph.flopSelected(v);
@@ -121,15 +194,21 @@ public class CanvasController {
             }   
         }
         else if(selectedVertices.size() == 1) { //Issue with this case
+            Vertex selectedVertex = selectedVertices.get(0);
             if(v == null){
-                graph.addVertexWithNeighbor(mouseX, mouseY, selectedVertices.get(0));
+                graph.addVertexWithNeighbor(mouseX, mouseY, selectedVertex);
             }else{
-                if(v == selectedVertices.get(0)){ //right here
+                if(v == selectedVertex){ //right here
                     graph.flopSelected(v);
                 }
                 else{
-                    graph.makeNeighbor(selectedVertices.get(0), v);
-                    graph.flopSelected(selectedVertices.get(0));
+                    if(!selectedVertex.getNeighbors().containsKey(v.getName())){
+                        graph.makeNeighbor(selectedVertex, v);
+                        graph.flopSelected(selectedVertex);
+                    }   
+                    else{
+                        graph.flopSelected(selectedVertex);
+                    }
                 }
             }
         }
@@ -137,6 +216,8 @@ public class CanvasController {
             graph.addVertex(mouseX, mouseY);
         }
     }
+
+
 
     private void moveLeftClick(double mouseX, double mouseY){
         ArrayList<Vertex> selectedVertices = graph.getSelectedVertices();
@@ -146,8 +227,6 @@ public class CanvasController {
             graph.flopSelected(curVertex);
         }
         else{
-            // System.out.println(mouseX);
-            // System.out.println(mouseY);
             Vertex v = foundCollision(mouseX, mouseY);
             if(v != null){
                 graph.flopSelected(v);

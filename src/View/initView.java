@@ -30,6 +30,7 @@ import src.model.GraphModel;
 import src.model.Vertex;
 import src.Controller.CanvasController;
 import src.model.Constants;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D; 
 
 public class initView extends Application{
     
@@ -107,16 +108,30 @@ public class initView extends Application{
         removeOption.setText("Remove Vertices/Edges");
         removeOption.setOnAction(e -> {
             System.out.println("Removing");
+            controller.setMode("remove");
         });
         editGraphChoices.getItems().addAll(moveOption, addOption, removeOption);
         mainMenu.getMenus().addAll(editGraphChoices);
 
     }
 
+    private static void drawArrow(Vertex curSource, Vertex curDest){
+        Vector3D srcLoc = new Vector3D(curSource.getXCoeff() * Constants.getScreenLength(),curSource.getYCoeff() * Constants.getCanvasHeight(),0);
+        Vector3D dstLoc = new Vector3D(curDest.getXCoeff() * Constants.getScreenLength(),curDest.getYCoeff() * Constants.getCanvasHeight(),0);
+        Vector3D diffUnitVector = dstLoc.subtract(srcLoc).normalize();
+        double x = diffUnitVector.getX();
+        double y = diffUnitVector.getY();
+        Vector3D leftArrowLine = new Vector3D((Math.cos(Constants.getArrowAngle() * Constants.TORADIANS) * x - Math.sin(Constants.getArrowAngle() * Constants.TORADIANS) * y), (Math.sin(Constants.getArrowAngle() * Constants.TORADIANS) * x + Math.cos(Constants.getArrowAngle() * Constants.TORADIANS) * y), 0);
+        Vector3D rightArrowLine = new Vector3D((Math.cos(-Constants.getArrowAngle()* Constants.TORADIANS) * x - Math.sin(-Constants.getArrowAngle() * Constants.TORADIANS) * y), (Math.sin(-Constants.getArrowAngle() * Constants.TORADIANS) * x + Math.cos(-Constants.getArrowAngle() * Constants.TORADIANS) * y), 0);
+        gc.setLineWidth(Constants.getArrowWidth());
+        gc.setStroke(Color.DARKBLUE);
+        gc.strokeLine(dstLoc.getX(), dstLoc.getY(), dstLoc.getX() - Constants.getArrowLength() * leftArrowLine.getX(), dstLoc.getY() - Constants.getArrowLength() * leftArrowLine.getY());
+        gc.strokeLine(dstLoc.getX(), dstLoc.getY(), dstLoc.getX() - Constants.getArrowLength() * rightArrowLine.getX(), dstLoc.getY() - Constants.getArrowLength() * rightArrowLine.getY());
+    }
+
     private static void outputGraph(GraphModel graph){
         Object[] vertices = graph.getVertices().values().toArray();
         Vertex curVertex;
-        // double canvasHeight = Constants.SCREEN_HEIGHT - Constants.TITLE_BAR_HEIGHT - Constants.TOOL_BAR_HEIGHT;
         for(int i = 0; i < vertices.length; i++){ //Vertex output
             curVertex = (Vertex) vertices[i];
             if(curVertex.isSelected()){
@@ -127,16 +142,20 @@ public class initView extends Application{
             }
             gc.fillOval(curVertex.getXCoeff() * Constants.getScreenLength() - Constants.getVertexOffset(), curVertex.getYCoeff() * Constants.getCanvasHeight() - Constants.getVertexOffset() , Constants.getVertexSize(), Constants.getVertexSize());
         }
-
-        Object[] edges = graph.getEdges().values().toArray();
-        gc.setLineWidth(Constants.getLineWidth());
         Vertex curSource;
         Vertex curDest;
-        for(int i = 0; i < edges.length; i++){ //Edge output
-            curSource = ((Edges) edges[i]).getSrcVertex();
-            curDest = ((Edges) edges[i]).getDestVertex();
-            gc.setStroke(Color.BLUE);
-            gc.strokeLine(curSource.getXCoeff() * Constants.getScreenLength(), curSource.getYCoeff() * Constants.getCanvasHeight(), curDest.getXCoeff() * Constants.getScreenLength(), curDest.getYCoeff() * Constants.getCanvasHeight());
+        for(Object v : vertices){
+            curSource = (Vertex) v;
+            Object[] curEdges = curSource.getNeighbors().values().toArray();
+            for(Object e : curEdges){
+                curDest = ((Edges) e).getDestVertex();
+                gc.setLineWidth(Constants.getLineWidth());
+                gc.setStroke(Color.BLUE);
+                gc.strokeLine(curSource.getXCoeff() * Constants.getScreenLength(), curSource.getYCoeff() * Constants.getCanvasHeight(), curDest.getXCoeff() * Constants.getScreenLength(), curDest.getYCoeff() * Constants.getCanvasHeight());
+                if(Constants.isDirected()){
+                    drawArrow(curSource, curDest);
+                }
+            }
         }
     }
 
@@ -144,7 +163,6 @@ public class initView extends Application{
         scene.setOnMouseClicked(e -> {
             MouseButton button = e.getButton();
             if(button==MouseButton.PRIMARY){
-                System.out.println("LEFT");
                 controller.leftClick(e.getX(), e.getY() - Constants.getToolBarHeight());
             }
             //controller.click(e.getX(), e.getY() - Constants.getToolBarHeight()); //Get's mouse location relativeto canvas top left corner
@@ -152,7 +170,7 @@ public class initView extends Application{
     }
 
     public static void modelUpdate(GraphModel graph, String message){
-        System.out.println("modelUpdate");
+        System.out.println("modelUpdate " + message);
         switch (message){
             case "read" -> {initUserInputs(); clearCanvas(); outputGraph(graph); System.out.println("read");}
             case "graphUpdate" -> {clearCanvas(); outputGraph(graph);}
