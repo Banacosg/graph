@@ -54,7 +54,7 @@ public class initView extends Application{
         createCanvas();
         scene = new Scene(borderPane);
         initController(primaryStage);
-        controller.readFile(new File("data/graph.grh")); //So no error occurs when clicking on screen before opening file
+        controller.readFile(new File("data/blankGraph.grh")); //So no error occurs when clicking on screen before opening file
         mainMenu.getMenus().add(initFileChooser(primaryStage, controller));
         initUserButtons();
         primaryStage.setScene(scene);
